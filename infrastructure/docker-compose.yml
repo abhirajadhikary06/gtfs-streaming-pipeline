@@ -60,6 +60,7 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_PROMETHEUS_AUTH_TYPE: public
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000"]
@@ -191,7 +192,7 @@ services:
     volumes:
       - ..:/opt/gtfs-pipeline
     command: >-
-      sh -c "pip install --disable-pip-version-check --no-cache-dir redis fastapi 'uvicorn[standard]' &&
+      sh -c "pip install --disable-pip-version-check --no-cache-dir redis fastapi 'uvicorn[standard]' prometheus-fastapi-instrumentator &&
       uvicorn serving.realtime.main:app --host 0.0.0.0 --port 8000"
     environment:
       REDIS_HOST: redis
@@ -222,3 +223,44 @@ services:
       api:
         condition: service_started
     restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    networks:
+      - gtfs-network
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      - gtfs-network
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./monitoring/grafana_datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./monitoring/dashboards:/etc/grafana/provisioning/dashboards
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:latest
+    container_name: gtfs-kafka-exporter
+    networks:
+      - gtfs-network
+    command:
+      - "--kafka.server=kafka:29092"
+    ports:
+      - "9308:9308"
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: gtfs-redis-exporter
+    networks:
+      - gtfs-network
+    environment:
+      - REDIS_ADDR=redis://gtfs-redis:6379
+    ports:
+      - "9121:9121"

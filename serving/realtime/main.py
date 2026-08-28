@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi.responses import JSONResponse
 import redis
 
@@ -6,6 +7,7 @@ from serving.realtime.db import get_all_vehicles, get_route_health, get_network_
 from serving.realtime.db import get_redis_client
 
 app = FastAPI(title="GTFS Realtime Analytics API")
+Instrumentator().instrument(app).expose(app)
 
 @app.get("/api/vehicles")
 def fetch_vehicles():

@@ -15,7 +15,12 @@ uvicorn[standard]>=0.27.0
 # Testing & Utilities
 pytest==7.4.4
 python-dotenv==1.0.0
-prometheus-client==0.19.0
+pytest-mock>=3.11.0
+httpx>=0.24.0
+
+# --- Observability & Metrics ---
+prometheus-client>=0.17.0
+prometheus-fastapi-instrumentator
 
 # Batch Serving
 duckdb>=0.10.0
