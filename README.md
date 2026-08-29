@@ -1,6 +1,7 @@
 <div align="center">
 <img width="3567" height="1073" alt="image" src="https://github.com/user-attachments/assets/899ab4eb-5a47-432b-9502-3a784d61a2f2" />
 </div>
+
 # GTFS Realtime Streaming Pipeline
 
 A production-grade, Kappa-style real-time transit streaming platform. The system continuously ingests GTFS-Realtime events, processes them using event-time-aware Spark Structured Streaming, stores durable Bronze and Silver data in a MinIO-backed Delta Lakehouse, republishes derived events to Kafka, and serves them through independent real-time (Redis/FastAPI) and historical (DuckDB/Chainlit) serving layers.
